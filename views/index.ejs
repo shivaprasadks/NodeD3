@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>D3 Server-side Demo</title>
+    <style>
+        .chart div {
+            font: 10px sans-serif;
+            background-color: steelblue;
+            text-align: right;
+            padding: 3px;
+            margin: 1px;
+            color: white;
+        }
+
+        body {
+            font: 12px Arial;
+        }
+
+        path {
+            stroke: steelblue;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: grey;
+            stroke-width: 1;
+            shape-rendering: crispEdges;
+        }
+    </style>
+
+</head>
+<body>
+<h1>D3 Server-side Demo</h1>
+<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script>
+
+    var chart = d3.select("body")
+        .append("div").attr("class", "chart");
+
+    var data = <%- JSON.stringify(dataset) %>;//[4, 8, 15, 16, 23, 42];
+
+    console.log(data);
+    var barWidth = 12;
+    var x = d3.scale.linear()
+        .domain([d3.max(data), 0])
+        .range(["0px", "500px"]);
+    chart.selectAll("div").data(data).enter().append("div")
+        .style("height", function (d) {
+            return barWidth + "px";
+        })
+        .style("width", function (d) {
+            return d * barWidth + "px";
+        })
+        .text(function (d) {
+            return d;
+        });
+</script>
+<p><%= dataset %></p>
+</body>
+</html>
