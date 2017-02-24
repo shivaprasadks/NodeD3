@@ -3,64 +3,235 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>D3 Server-side Demo</title>
+    <title>Retail Analytics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="./stylesheets/style.css">
     <style>
-        .chart div {
-            font: 10px sans-serif;
-            background-color: steelblue;
-            text-align: right;
-            padding: 3px;
-            margin: 1px;
-            color: white;
-        }
 
-        body {
-            font: 12px Arial;
-        }
 
-        path {
-            stroke: steelblue;
-            stroke-width: 2;
-            fill: none;
-        }
-
-        .axis path,
-        .axis line {
-            fill: none;
-            stroke: grey;
-            stroke-width: 1;
-            shape-rendering: crispEdges;
-        }
     </style>
-
 </head>
+
 <body>
-<h1>D3 Server-side Demo</h1>
-<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Retail Analytics</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#"></a></li>
+            <li><a href="#"></a></li>
+            <li><a href="#"></a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign OUt</a></li>
+            <!--   <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li> -->
+        </ul>
+    </div>
+</nav>
+
+<div class="btnData">
+    <button type="button" class="btn btn-primary" id="data1">Weekly</button>
+    <button type="button" class="btn btn-success" id="data2">Daily</button>
+
+</div>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
 <script>
+    $('#data2').click(function () {
+        $.post('/page', {dataType: "json"}, function (json_data) {
 
-    var chart = d3.select("body")
-        .append("div").attr("class", "chart");
 
-    var data = <%- JSON.stringify(dataset) %>;//[4, 8, 15, 16, 23, 42];
-
-    console.log(data);
-    var barWidth = 12;
-    var x = d3.scale.linear()
-        .domain([d3.max(data), 0])
-        .range(["0px", "500px"]);
-    chart.selectAll("div").data(data).enter().append("div")
-        .style("height", function (d) {
-            return barWidth + "px";
-        })
-        .style("width", function (d) {
-            return d * barWidth + "px";
-        })
-        .text(function (d) {
-            return d;
+            daily(json_data);
         });
+    });
+    $('#data1').click(function () {
+        $.get('/', {dataType: "json"}, function (json_data) {
+
+            var temp = <%- JSON.stringify(data) %>;
+            //  console.log(temp);
+            weekly(temp)
+        });
+    });
+    $.get('/', {dataType: "json"}, function (json_data) {
+
+        var temp = <%- JSON.stringify(data) %>;
+        //  console.log(temp);
+        weekly(temp)
+    });
+
+    var parseDate, xAxis;
+    var margin = {top: 20, right: 20, bottom: 70, left: 40},
+        width = window.innerWidth - margin.left - margin.right,
+        height = 300 - margin.top - margin.bottom,
+        x = d3.scale.ordinal().rangeRoundBands([0, width], .05),
+
+        y = d3.scale.linear().range([height, 0]),
+        yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .ticks(10),
+
+        svg = d3.select("body").append("svg")
+        //***EDIT***
+        //the data method returns the enter collection and your not ready for it yet...
+        //.data(root)
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Value (Rs)");
+
+    function daily(data) {
+        parseDate = d3.time.format("%d/%m").parse,
+            xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom")
+                .tickFormat(d3.time.format("%d/%m"));
+        init(data)
+    }
+    function weekly(data) {
+        parseDate = d3.time.format("%Y-%m").parse,
+            xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom")
+                .tickFormat(d3.time.format("%Y-%m"));
+        init(data)
+    }
+
+
+    function init(jdata) {
+
+
+
+        //root = JSON.parse(jdata),
+        //***EDIT*** jdata is not a string as required by JSON.parse
+        //it's already well formed so just use it
+        var data = jdata;
+
+
+        // Parse the date / time
+        //***a better comment would be "for parsing the date and time"...
+
+
+        //d3.json
+
+        //d3.csv("bar-data.csv", function(error, data) {
+        //d3.selectAll('g').data(function(data){
+
+        data.forEach(function (d) {
+
+            //NOW is parsing the date and time
+            d.date = parseDate(d.date);
+
+            d.value = +d.value;
+
+
+        });
+
+
+        replay(data);
+
+
+        /* var bar = svg.selectAll("bar")
+         .data(data)
+         .enter().append("rect")
+         .attr("class", "bar")
+         .attr("x", function (d) {
+         return x(d.date);
+         })
+         .attr("width", x.rangeBand())
+         .attr("y", function (d) {
+         return y(d.value);
+         })
+         .attr("height", function (d) {
+         return height - y(d.value);
+         }); */
+
+        function replay(data) {
+            var slices = [];
+            for (var i = 0; i < data.length; i++) {
+                slices.push(data.slice(0, i + 1));
+            }
+            slices.forEach(function (slice, index) {
+                setTimeout(function () {
+                    draw(slice);
+                }, index * 300);
+            });
+        }
+
+        function draw(data) {
+            // measure the domain (for x, unique letters) (for y [0,maxFrequency])
+            // now the scales are finished and usable
+            x.domain(data.map(function (d) {
+                return d.date;
+            }));
+
+            y.domain([0, d3.max(data, function (d) {
+                return d.value;
+            })]);
+
+            // another g element, this time to move the origin to the bottom of the svg element
+            // someSelection.call(thing) is roughly equivalent to thing(someSelection[i])
+            //   for everything in the selection\
+            // the end result is g populated with text and lines!
+            svg.select('.x.axis').transition().duration(200).call(xAxis);
+
+            // same for yAxis but with more transform and a title
+            svg.select(".y.axis").transition().duration(200).call(yAxis)
+
+            // THIS IS THE ACTUAL WORK!
+            var bars = svg.selectAll(".bar").data(data, function (d) {
+                return d.date;
+            }) // (data) is an array/iterable thing, second argument is an ID generator function
+
+            bars.exit()
+                .transition()
+                .duration(300)
+                .attr("y", y(0))
+                .attr("height", height - y(0))
+                .style('fill-opacity', 1e-6)
+                .remove();
+
+            // data that needs DOM = enter() (a set/selection, not an event!)
+            bars.enter().append("rect")
+                .attr("class", "bar")
+                .attr("y", y(0))
+                .attr("height", height - y(0));
+
+            // the "UPDATE" set:
+            bars.transition().duration(300).attr("x", function (d) {
+                return x(d.date);
+            }) // (d) is one item from the data array, x is the scale object from above
+                .attr("width", x.rangeBand()) // constant, so no callback function(d) here
+                .attr("y", function (d) {
+                    return y(d.value);
+                })
+                .attr("height", function (d) {
+                    return height - y(d.value);
+                }); // flip the height, because y's domain is bottom up, but SVG renders top down
+
+        }
+    }
+
 </script>
-<p><%= dataset %></p>
+
 </body>
 </html>

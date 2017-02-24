@@ -1,0 +1,29 @@
+.axis {
+    font: 10px sans-serif;
+}
+
+.bar {
+    fill: steelblue;
+}
+
+.bar:hover {
+    fill: brown;
+}
+
+.bar text {
+    fill: white;
+    font: 10px sans-serif;
+    text-anchor: middle;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.btnData {
+    margin-left: 10%;
+    margin-top: 20px;
+}
